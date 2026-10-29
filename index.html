@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#173f35">
+<title>La chasse aux 100 dinos 🦖</title>
+<style>
+:root{color-scheme:light;--green:#173f35;--cream:#fbf7ed;--lime:#d9ef9b;--ink:#20312b;--muted:#64736b;--line:#dce4d8}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:680px;margin:auto;padding:22px 16px 48px}
+header{background:var(--green);color:white;padding:24px 20px;border-radius:22px}
+h1{font-size:28px;line-height:1.12;margin:0 0 8px}header p{margin:0;color:#e5f0e9}
+.progressline{height:9px;background:#d9e2d8;border-radius:99px;overflow:hidden;margin-top:16px}.bar{height:100%;width:0;background:var(--lime);transition:width .2s}
+.stats{display:flex;justify-content:space-between;gap:12px;margin-top:8px;font-size:13px;color:#e5f0e9}
+.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:16px}
+label{display:block;font-weight:700;margin-bottom:8px}
+.inputrow{display:flex;gap:8px}
+input{width:100%;min-width:0;border:1px solid #b9c8bd;border-radius:12px;padding:14px;font-size:18px;letter-spacing:2px}
+button{border:0;border-radius:12px;background:var(--green);color:white;padding:13px 16px;font-size:16px;font-weight:700;cursor:pointer}
+.hint{font-size:13px;color:var(--muted);line-height:1.4;margin:10px 0 0}
+#message{min-height:22px;font-weight:650;margin-top:12px}
+h2{font-size:19px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.tile{background:#f1f4ee;border:1px solid var(--line);border-radius:12px;min-height:66px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;text-align:center;padding:6px;color:#69766d}
+.tile .num{font-size:13px;font-weight:700}.tile .status{font-size:19px}
+.tile.found{background:#e8f3d4;border-color:#c9dda6;color:#243e2a}
+.list{display:grid;gap:8px;margin-top:12px}
+.foundrow{display:flex;align-items:flex-start;gap:10px;padding:11px;border-radius:12px;background:#f5f8f1;border:1px solid var(--line)}
+.foundrow .check{font-size:18px}.foundrow strong{display:block;font-size:13px;color:var(--muted);margin-bottom:3px}
+footer{font-size:12px;color:var(--muted);text-align:center;margin-top:18px}
+@media(min-width:520px){.grid{grid-template-columns:repeat(10,minmax(0,1fr))}}
+</style>
+</head>
+<body><main>
+<header>
+<h1>La chasse aux 100 dinos 🦖</h1>
+<p>Trouve un dinosaure, saisis le code inscrit dessus et découvre sa cachette !</p>
+<div class="progressline"><div class="bar" id="bar"></div></div>
+<div class="stats"><span id="count">0 / 100 trouvés</span><span id="percent">0 %</span></div>
+</header>
+<section class="panel">
+<label for="code">Le code du dinosaure</label>
+<div class="inputrow"><input id="code" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Ex. 4821"><button id="submit">Valider</button></div>
+<div id="message" aria-live="polite"></div>
+<p class="hint">Chaque code révèle une cachette différente. Tu peux les trouver dans n’importe quel ordre.</p>
+</section>
+<section class="panel">
+<h2>Ta collection</h2>
+<div class="grid" id="grid"></div>
+<div class="list" id="foundlist"></div>
+</section>
+<footer>Astuce : ajoute cette page à l’écran d’accueil de ton iPhone pour la retrouver facilement.</footer>
+</main>
+<script>
+const ITEMS = [{"n": 1, "spot": "Tome 16 seraph", "code": "1952"}, {"n": 2, "spot": "Album Japon", "code": "3859"}, {"n": 3, "spot": "Au dessus balcon", "code": "8071"}, {"n": 4, "spot": "Étagère din", "code": "9975"}, {"n": 5, "spot": "Tome 8 Conan", "code": "4357"}, {"n": 6, "spot": "Kid cadre", "code": "8638"}, {"n": 7, "spot": "Anya bond", "code": "8131"}, {"n": 8, "spot": "Meuble tv switch", "code": "2325"}, {"n": 9, "spot": "Chausson", "code": "3559"}, {"n": 10, "spot": "Étagère black clutter", "code": "1651"}, {"n": 11, "spot": "Anya meuble tv", "code": "8474"}, {"n": 12, "spot": "Cadre calligraphie", "code": "1419"}, {"n": 13, "spot": "Boîte cristal", "code": "8650"}, {"n": 14, "spot": "Fausse plante chameaux", "code": "7471"}, {"n": 15, "spot": "Kiki", "code": "2076"}, {"n": 16, "spot": "Mao mao cuisine", "code": "1101"}, {"n": 17, "spot": "Boisson détective Conan", "code": "6185"}, {"n": 18, "spot": "Bocal entrée", "code": "3528"}, {"n": 19, "spot": "Boîte bonbon", "code": "4370"}, {"n": 20, "spot": "Verre", "code": "5833"}, {"n": 21, "spot": "Placard entrée", "code": "3037"}, {"n": 22, "spot": "Miroir", "code": "8656"}, {"n": 23, "spot": "Brosse à dent", "code": "2340"}, {"n": 24, "spot": "Tintin", "code": "5608"}, {"n": 25, "spot": "Coffre match", "code": "2409"}, {"n": 26, "spot": "Meuble salle de bain haut", "code": "6134"}, {"n": 27, "spot": "Brosse wc", "code": "7465"}, {"n": 28, "spot": "Lampe toilette", "code": "6301"}, {"n": 29, "spot": "Cadre Japon entree", "code": "8821"}, {"n": 30, "spot": "Cadre porte salon", "code": "2875"}, {"n": 31, "spot": "Boîte NB", "code": "4886"}, {"n": 32, "spot": "Poterie déco", "code": "1730"}, {"n": 33, "spot": "Cadre ghibli", "code": "3969"}, {"n": 34, "spot": "Compteur linky", "code": "2384"}, {"n": 35, "spot": "EVOLI", "code": "4505"}, {"n": 36, "spot": "Étagère chambre", "code": "8252"}, {"n": 37, "spot": "Pop MHA", "code": "1104"}, {"n": 38, "spot": "Bakugo", "code": "5559"}, {"n": 39, "spot": "Lampe", "code": "1261"}, {"n": 40, "spot": "Coran", "code": "7001"}, {"n": 41, "spot": "Boîte Minecraft", "code": "1936"}, {"n": 42, "spot": "Coquillage étagère", "code": "4859"}, {"n": 43, "spot": "Baguette", "code": "6342"}, {"n": 44, "spot": "Cadre pipou", "code": "5883"}, {"n": 45, "spot": "Cadre dandandan petit", "code": "9452"}, {"n": 46, "spot": "Shampoo", "code": "2507"}, {"n": 47, "spot": "Magnet Grèce", "code": "9370"}, {"n": 48, "spot": "Bob Bali", "code": "6116"}, {"n": 49, "spot": "Étagère ranma", "code": "3580"}, {"n": 50, "spot": "Chevet Melina", "code": "8904"}, {"n": 51, "spot": "Fausse plante bourbon", "code": "6467"}, {"n": 52, "spot": "Cadre Akai", "code": "6136"}, {"n": 53, "spot": "Sous la play", "code": "3186"}, {"n": 54, "spot": "Cadre jabl nour", "code": "4580"}, {"n": 55, "spot": "VMC cuisine", "code": "8875"}, {"n": 56, "spot": "Boîte the", "code": "9338"}, {"n": 57, "spot": "Classeur Pokémon", "code": "1679"}, {"n": 58, "spot": "Carte yugioh", "code": "3142"}, {"n": 59, "spot": "prise entree", "code": "3249"}, {"n": 60, "spot": "Compteur linky desssus", "code": "6259"}, {"n": 61, "spot": "Cadre porte chambre", "code": "3551"}, {"n": 62, "spot": "Épée fairy tail", "code": "7877"}, {"n": 63, "spot": "Lampe salon", "code": "8858"}, {"n": 64, "spot": "Cadre aquarium", "code": "4068"}, {"n": 65, "spot": "Tringle chambre", "code": "9670"}, {"n": 66, "spot": "Derrière porte chambre", "code": "4981"}, {"n": 67, "spot": "Bocal nouvelle calédonie", "code": "3512"}, {"n": 68, "spot": "Pot grande Plante salon Conan", "code": "2564"}, {"n": 69, "spot": "Cadre douche", "code": "8389"}, {"n": 70, "spot": "Télévision derrière", "code": "7944"}, {"n": 71, "spot": "Récipient cookie", "code": "7322"}, {"n": 72, "spot": "Verrine", "code": "6896"}, {"n": 73, "spot": "Armoire haut chambre", "code": "8723"}, {"n": 74, "spot": "Meuble chambre porte", "code": "9204"}, {"n": 75, "spot": "Boîte outil lit", "code": "5547"}, {"n": 76, "spot": "Chaussette mel", "code": "8030"}, {"n": 77, "spot": "Thibaut Geoffrey", "code": "7855"}, {"n": 78, "spot": "Théière boîte", "code": "1829"}, {"n": 79, "spot": "Lovecraft", "code": "9207"}, {"n": 80, "spot": "Edward", "code": "6256"}, {"n": 81, "spot": "Tasse simpson", "code": "1812"}, {"n": 82, "spot": "Bol cuisine", "code": "7534"}, {"n": 83, "spot": "Pouff salt", "code": "6308"}, {"n": 84, "spot": "Bas aquarium", "code": "1119"}, {"n": 85, "spot": "Grand cadre dansansan", "code": "1727"}, {"n": 86, "spot": "T-shirt Mel", "code": "5704"}, {"n": 87, "spot": "Sac Mk", "code": "2517"}, {"n": 88, "spot": "Chevet Moha", "code": "9801"}, {"n": 89, "spot": "Colisée Vérone", "code": "1575"}, {"n": 90, "spot": "Plante lego", "code": "5183"}, {"n": 91, "spot": "Derrière totoro", "code": "3515"}, {"n": 92, "spot": "Boîte conserve thon", "code": "6223"}, {"n": 93, "spot": "Match idole", "code": "2392"}, {"n": 94, "spot": "Cadre ghusl", "code": "2697"}, {"n": 95, "spot": "Grande plante télé", "code": "9988"}, {"n": 96, "spot": "Chaussure Nike running Mel", "code": "6233"}, {"n": 97, "spot": "Plexy salle de bain", "code": "7535"}, {"n": 98, "spot": "Shampoing", "code": "6291"}, {"n": 99, "spot": "Cuisine micro-onde", "code": "3311"}, {"n": 100, "spot": "Étagère dîne", "code": "6917"}];
+const STORAGE_KEY = "dino-hunt-found-v1";
+let found = new Set();
+try { found = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); } catch(e) {}
+const $ = id => document.getElementById(id);
+function render(){
+  $("count").textContent = `${found.size} / ${ITEMS.length} trouvés`;
+  const pct = Math.round(found.size / ITEMS.length * 100);
+  $("percent").textContent = `${pct} %`;
+  $("bar").style.width = `${pct}%`;
+  $("grid").innerHTML = ITEMS.map(it => {
+    const yes = found.has(it.n);
+    return `<div class="tile ${yes?'found':''}"><span class="num">Dino ${String(it.n).padStart(2,'0')}</span><span class="status">${yes?'✓':'🔒'}</span></div>`;
+  }).join("");
+  $("foundlist").innerHTML = ITEMS.filter(it=>found.has(it.n)).map(it =>
+    `<div class="foundrow"><span class="check">🦖</span><div><strong>Dino ${String(it.n).padStart(2,'0')} · CACHEtte trouvée</strong>${escapeHtml(it.spot)}</div></div>`
+  ).join("");
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function submit(){
+  const val = $("code").value.trim();
+  if(!/^\d{4}$/.test(val)){ $("message").textContent="Entre le code à 4 chiffres inscrit sur le dino."; return; }
+  const item = ITEMS.find(it=>it.code===val);
+  if(!item){$("message").textContent="Hmm, ce code ne correspond à aucun dino. Réessaie !";return;}
+  if(found.has(item.n)){$("message").innerHTML=`Tu as déjà trouvé ce dino ! Sa cachette : <strong>${escapeHtml(item.spot)}</strong>`;return;}
+  found.add(item.n);
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify([...found]));}catch(e){}
+  $("message").innerHTML=`🎉 Bien joué ! <strong>Dino ${String(item.n).padStart(2,'0')}</strong> se cachait ici : <strong>${escapeHtml(item.spot)}</strong>`;
+  $("code").value="";
+  render();
+}
+$("submit").addEventListener("click",submit);
+$("code").addEventListener("keydown",e=>{if(e.key==="Enter")submit();});
+render();
+</script></body></html>
